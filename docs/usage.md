@@ -47,7 +47,7 @@ $ ethdo wallet batch --wallet="Validators" ---passphrase="my account secret" --b
 `ethdo wallet create` creates a new wallet with the given parameters.  Options for creating a wallet include:
 
 - `wallet`: the name of the wallet to create
-- `type`: the type of wallet to create.  This can be either "nd" for a non-deterministic wallet, where private keys are generated randomly, or "hd" for a hierarchical deterministic wallet, where private keys are generated from a seed and path as per [EIP-2333](https://eips.ethereum.org/EIPS/eip-2333) (defaults to "nd")
+- `type`: the type of wallet to create.  This can be either "nd" for a non-deterministic wallet, where private keys are generated randomly, "hd" for a hierarchical deterministic wallet, where private keys are generated from a seed and path as per [EIP-2333](https://eips.ethereum.org/EIPS/eip-2333), "keystore" for a wallet where data is written in the [EIP=2335](https://eips.ethereum.org/EIPS/eip-2335) format, or "distributed" for a wallet used by [Dirk](https://github.com/wealdtech/dirk) (defaults to "nd")
 - `wallet-passphrase`: the passphrase for of the wallet.  This is required for hierarchical deterministic wallets, to protect the seed
 - `mnemonic`: for hierarchical deterministic wallets only, use a pre-defined 24-word [BIP-39 seed phrase](https://en.bitcoin.it/wiki/Seed_phrase) to create the wallet, along with an additional "seed extension" phrase if required.  **Warning** The same mnemonic can be used to create multiple wallets, in which case they will generate the same keys.
 
@@ -183,6 +183,7 @@ $ ethdo account create --account="Personal wallet/Operations" --wallet-passphras
 - `show-private-key`: show the private of the derived account.  **Warning** displaying private keys, especially those derived from seeds held on hardware wallets, can expose your Ether to risk of being stolen.  Only use this option if you are sure you understand the risks involved
 - `show-withdrawal-credentials`: show the withdrawal credentials of the derived account
 - `generate-keystore`: generate a keystore for the account
+- `json`: output the generated keystore to stdout
 
 ```sh
 $ ethdo account derive --mnemonic="abandon ... abandon art" --path="m/12381/3600/0/0"
@@ -370,6 +371,18 @@ Deposits: 0
 Voluntary exits: 0
 ```
 
+#### `trail`
+
+`ethdo block trail` tracks back from the provided block to see if it is in a chain descending from the a target block.  Options include:
+
+- `blockid`: the ID (slot, root, 'head') of the block to trail from; defaults to head
+- `target`: the target block (slot, block hash, 'justified', 'finalized') to check; defaults to 'justified'
+- `max-blocks`: the maximum number of blocks to look at to find the target
+
+```sh
+$ ethdo block trail
+Target 'justified' found at a distance of 54 block(s)
+```
 ### `chain` commands
 
 Chain commands focus on providing information about Ethereum consensus chains.
@@ -658,6 +671,7 @@ $ ethdo validator credentials set --validator=Validators/1 --withdrawal-address=
 - `withdrawaladdress` specify the Ethereum execution address to be used for the withdrawal credentials (if withdrawalpubkey is not supplied)
 - `withdrawalpubkey` specify the public key to be used for the withdrawal credentials (if withdrawalaccount is not supplied)
 - `validatoraccount` specify the account to be used for the validator
+- `compounding` specify if this validator should be compounding, retaining Ether above 32 ETH by default to compound rewards
 - `depositvalue` specify the amount of the deposit
 - `forkversion` specify the fork version for the deposit signature; this defaults to mainnet.  Note that supplying an incorrect value could result in the loss of your deposit, so only supply this value if you are sure you know what you are doing.  You can find the value for other chains by fetching the value supplied in "Genesis fork version" of the `ethdo chain info` command
 - `raw` generate raw hex output that can be supplied as the data to an Ethereum 1 deposit transaction
@@ -681,6 +695,7 @@ $ ethdo validator exit --private-key=0x01e748d098d3bcb477d636f19d510399ae18205fa
 `ethdo validator info` provides information for a given validator.  Options include:
 
 - `validator`: the validator for which to obtain information, as a [validator specifier](https://github.com/wealdtech/ethdo#validator-specifier)
+- `blockid`: the ID (slot, root, 'head') of the block at which to obtain information
 
 ```sh
 $ ethdo validator info --validator=Validators/1

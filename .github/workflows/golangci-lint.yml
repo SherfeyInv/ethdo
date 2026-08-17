@@ -1,23 +1,29 @@
-name: golangci-lint
+name: 'golangci-lint'
 on:
-  push:
-    tags:
-      - v*
-    branches:
-    - master
   pull_request:
+  push:
+    branches:
+      - 'master'
+  workflow_dispatch:
+
 permissions:
-  contents: read
+  contents: 'read'
+  pull-requests: 'read'
+  checks: 'write'
+
 jobs:
   golangci:
-    name: lint
-    runs-on: ubuntu-latest
+    name: 'lint'
+    runs-on: 'ubuntu-24.04'
     steps:
-      - uses: actions/setup-go@v4
+      - uses: 'actions/setup-go@v5'
         with:
-          go-version: '^1.21'
-      - uses: actions/checkout@v4
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
+          cache: false
+          go-version: '^1.22'
+      - uses: 'actions/checkout@v4'
+      - uses: 'golangci/golangci-lint-action@v7'
         with:
+          version: 'v2.12.2'
+          args: '--timeout=60m'
           only-new-issues: true
+          skip-cache: true

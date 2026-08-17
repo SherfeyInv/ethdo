@@ -1,4 +1,60 @@
 dev:
+ 
+1.39.1:
+ - refactor sync committee to use slot endpoint rather than epoch query param
+
+1.39.0:
+ - support Fulu 
+
+1.38.0:
+ - update latest version of go-eth2-client to support complex Spec types
+ - adapt event handling to use new event handler structures in go-eth2-client  
+
+1.37.4:
+ - add support for eip-7044 in exit verify command
+ - provide ETH values as well as validator numbers in "epoch summary"
+
+1.37.3:
+ - add "hoodi" to the list of supported networks
+
+1.37.2:
+ - add "block trail"
+
+1.37.1:
+ - handle missing blobs for block info
+ - fix `--epoch` flag for epoch summary
+
+1.37.0:
+ - support Electra
+ - add `--compounding` flag when creating validator deposit data
+
+1.36.6:
+  - allow specification of blockid for validator info
+  - validator depositdata orders deposits from an HD wallet by path
+
+1.36.5:
+  - avoid corner case mnemonic derivation with 25th word
+
+1.36.2:
+  - avoid crash when signing and verifing signatures using keys rather than accounts
+
+1.36.1:
+  - more JSON data for epoch summary
+  - fix crash when block ifno had no blobs
+
+1.36.0:
+  - support keystore wallets
+
+1.35.6:
+  - provide more JSON data in "epoch summary"
+
+1.35.5:
+  - allow keystore to be output to the console
+
+1.35.4:
+  - provide consensus and execution client info in block info output 
+
+1.35.3:
   - provide better error message on context deadlline exceeded
   - update launchpad output to match latest version
   - add deposit contract address to "chain info"

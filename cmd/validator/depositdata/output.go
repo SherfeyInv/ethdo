@@ -24,6 +24,7 @@ import (
 type dataOut struct {
 	format                string
 	account               string
+	path                  string
 	validatorPubKey       *spec.BLSPubKey
 	withdrawalCredentials []byte
 	amount                spec.Gwei
@@ -113,6 +114,7 @@ func validatorDepositDataOutputLaunchpad(datum *dataOut) (string, error) {
 		[4]byte{0x80, 0x00, 0x00, 0x69}: "ropsten",
 		[4]byte{0x90, 0x00, 0x00, 0x69}: "sepolia",
 		[4]byte{0x01, 0x01, 0x70, 0x00}: "holesky",
+		[4]byte{0x10, 0x00, 0x09, 0x10}: "hoodi",
 	}
 
 	if datum.validatorPubKey == nil {
@@ -170,7 +172,7 @@ func validatorDepositDataOutputJSON(datum *dataOut) (string, error) {
 	if datum.depositDataRoot == nil {
 		return "", errors.New("deposit data root required")
 	}
-	if datum.depositDataRoot == nil {
+	if datum.depositMessageRoot == nil {
 		return "", errors.New("deposit message root required")
 	}
 	if datum.forkVersion == nil {

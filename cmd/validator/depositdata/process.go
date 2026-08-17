@@ -17,6 +17,8 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"sort"
+	"strconv"
 	"strings"
 
 	spec "github.com/attestantio/go-eth2-client/spec/phase0"
@@ -38,6 +40,21 @@ func process(data *dataIn) ([]*dataOut, error) {
 	withdrawalCredentials, err := createWithdrawalCredentials(data)
 	if err != nil {
 		return nil, err
+	}
+
+	// These values are hard-coded, to allow deposit data to be generated without a connection to the beacon node.
+	if data.amount < 1000000000 { // MIN_DEPOSIT_AMOUNT
+		return nil, errors.New("deposit value must be at least 1 Ether")
+	}
+	switch data.compounding {
+	case false:
+		if data.amount > 32000000000 {
+			return nil, errors.New("deposit value exceeds maximum for a non-compounding validator")
+		}
+	case true:
+		if data.amount > 2048000000000 {
+			return nil, errors.New("deposit value exceeds maximum for a compounding validator")
+		}
 	}
 
 	for _, validatorAccount := range data.validatorAccounts {
@@ -80,7 +97,7 @@ func process(data *dataIn) ([]*dataOut, error) {
 		copy(depositDataRoot[:], root[:])
 
 		validatorWallet := validatorAccount.(e2wtypes.AccountWalletProvider).Wallet()
-		results = append(results, &dataOut{
+		result := &dataOut{
 			format:                data.format,
 			account:               fmt.Sprintf("%s/%s", validatorWallet.Name(), validatorAccount.Name()),
 			validatorPubKey:       &pubKey,
@@ -90,8 +107,53 @@ func process(data *dataIn) ([]*dataOut, error) {
 			forkVersion:           data.forkVersion,
 			depositMessageRoot:    &depositMessageRoot,
 			depositDataRoot:       &depositDataRoot,
+		}
+		if pathProvider, isPathProvider := validatorAccount.(e2wtypes.AccountPathProvider); isPathProvider {
+			result.path = pathProvider.Path()
+		}
+		results = append(results, result)
+	}
+	if len(results) == 0 {
+		return results, nil
+	}
+
+	// Order the results
+	if results[0].path != "" {
+		// Order accounts by their path components.
+		sort.Slice(results, func(i int, j int) bool {
+			iBits := strings.Split(results[i].path, "/")
+			jBits := strings.Split(results[j].path, "/")
+			for index := range iBits {
+				if iBits[index] == "m" && jBits[index] == "m" {
+					continue
+				}
+				if len(jBits) <= index {
+					return false
+				}
+				iBit, err := strconv.ParseUint(iBits[index], 10, 64)
+				if err != nil {
+					return true
+				}
+				jBit, err := strconv.ParseUint(jBits[index], 10, 64)
+				if err != nil {
+					return false
+				}
+				if iBit < jBit {
+					return true
+				}
+				if iBit > jBit {
+					return false
+				}
+			}
+			return len(jBits) > len(iBits)
+		})
+	} else {
+		// Order accounts by their name.
+		sort.Slice(results, func(i int, j int) bool {
+			return strings.Compare(results[i].account, results[j].account) < 0
 		})
 	}
+
 	return results, nil
 }
 
@@ -145,7 +207,11 @@ func createWithdrawalCredentials(data *dataIn) ([]byte, error) {
 		withdrawalCredentials = make([]byte, 32)
 		copy(withdrawalCredentials[12:32], withdrawalAddressBytes)
 		// This is hard-coded, to allow deposit data to be generated without a connection to the beacon node.
-		withdrawalCredentials[0] = byte(1) // ETH1_ADDRESS_WITHDRAWAL_PREFIX
+		if data.compounding {
+			withdrawalCredentials[0] = byte(2) // COMPOUNDING_WITHDRAWAL_PREFIX
+		} else {
+			withdrawalCredentials[0] = byte(1) // ETH1_ADDRESS_WITHDRAWAL_PREFIX
+		}
 	default:
 		return nil, errors.New("withdrawal account, public key or address is required")
 	}

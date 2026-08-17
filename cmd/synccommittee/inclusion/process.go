@@ -120,6 +120,20 @@ func (c *command) process(ctx context.Context) error {
 				} else {
 					c.inclusions = append(c.inclusions, 2)
 				}
+			case spec.DataVersionElectra:
+				aggregate = block.Electra.Message.Body.SyncAggregate
+				if aggregate.SyncCommitteeBits.BitAt(c.committeeIndex) {
+					c.inclusions = append(c.inclusions, 1)
+				} else {
+					c.inclusions = append(c.inclusions, 2)
+				}
+			case spec.DataVersionFulu:
+				aggregate = block.Fulu.Message.Body.SyncAggregate
+				if aggregate.SyncCommitteeBits.BitAt(c.committeeIndex) {
+					c.inclusions = append(c.inclusions, 1)
+				} else {
+					c.inclusions = append(c.inclusions, 2)
+				}
 			default:
 				return fmt.Errorf("unhandled block version %v", block.Version)
 			}

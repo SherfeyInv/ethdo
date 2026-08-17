@@ -1,4 +1,4 @@
-// Copyright © 2019 - 2022 Weald Technology Trading
+// Copyright © 2019 - 2025 Weald Technology Trading
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -26,7 +26,7 @@ var validatorDepositDataCmd = &cobra.Command{
 	Short: "Generate deposit data for one or more validators",
 	Long: `Generate data for deposits to the Ethereum 1 validator contract.  For example:
 
-    ethdo validator depositdata --validatoraccount=primary/validator --withdrawalaccount=primary/current --value="32 Ether"
+    ethdo validator depositdata --validatoraccount=primary/validator --withdrawalaccount=primary/current --depositvalue="32 Ether"
 
 If validatoraccount is provided with an account path it will generate deposit data for all matching accounts.
 
@@ -57,6 +57,7 @@ func init() {
 	validatorDepositDataCmd.Flags().Bool("raw", false, "Print raw deposit data transaction data")
 	validatorDepositDataCmd.Flags().String("forkversion", "", "Use a hard-coded fork version (default is to use mainnet value)")
 	validatorDepositDataCmd.Flags().Bool("launchpad", false, "Print launchpad-compatible JSON")
+	validatorDepositDataCmd.Flags().Bool("compounding", false, "Create a compounding (max 2048 ETH) validator")
 }
 
 func validatorDepositdataBindings(cmd *cobra.Command) {
@@ -82,6 +83,9 @@ func validatorDepositdataBindings(cmd *cobra.Command) {
 		panic(err)
 	}
 	if err := viper.BindPFlag("launchpad", cmd.Flags().Lookup("launchpad")); err != nil {
+		panic(err)
+	}
+	if err := viper.BindPFlag("compounding", cmd.Flags().Lookup("compounding")); err != nil {
 		panic(err)
 	}
 }
